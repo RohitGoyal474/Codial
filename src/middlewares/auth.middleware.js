@@ -1,27 +1,32 @@
-import asyncHandler from "../utils/asyncHandler"
-import ApiError from "../utils/apiErrors"
+import {asyncHandler} from "../utils/asyncHandler.js"
+import { ApiError } from "../utils/apiErrors.js"
 import  Jwt  from "jsonwebtoken"
-import { User } from "../models/User.model"
+import { User } from "../models/User.model.js"
 
 
-const verifyJWT=asyncHandler(async(req,res,next)=>{
-try {
-        const token=req.cookies.refreshToken || req.headers(authorization)?.replace("Bearer ","")
-    
-        if(!token){
-            throw new ApiError(401,"please login or signup")
+
+export const verifyJWT = asyncHandler(async(req, _, next) => {
+    try {
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
+        console.log(token)
+        // console.log(token);
+        if (!token) {
+            throw new ApiError(401, "Unauthorized request")
         }
-        const decoded=Jwt.verify(token,process.env.REFRESH_TOKEN_SECRET)
-        const user=await User.findById(decoded?._id).select("-password -refreshToken")
     
-        if(!user){
-            throw new ApiError(401,"please login or signup")
+        const decodedToken = Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+    
+        const user = await User.findById(decodedToken?._id).select("-password -refreshToken")
+    
+        if (!user) {
+            
+            throw new ApiError(401, "Invalid Access Token")
         }
-        req.user=user
+    
+        req.user = user;
         next()
-} catch (error) {
-    throw new ApiError(401,"please login or signup")
-}
- 
+    } catch (error) {
+        throw new ApiError(401, error?.message || "Invalid access token")
+    }
+    
 })
-export{verifyJWT}

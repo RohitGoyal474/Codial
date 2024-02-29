@@ -1,8 +1,8 @@
-import mongoose,{Schema} from "mongoose";
-import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
-import bcrypt from "bcrypt";
+import mongoose, {Schema} from "mongoose";
+import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt"
 
-const UserSchema=new Schema(
+const userSchema=new Schema(
     {   
         username:{
             type:String,
@@ -54,23 +54,24 @@ const UserSchema=new Schema(
     }
 )
 
-UserSchema.pre("save",async function(next){
-    if(this.isModified("password")){
-        this.password=await bcrypt.hash(this.password,10);
-    }
-    next();
+userSchema.pre("save", async function (next) {
+    if(!this.isModified("password")) return next();
+
+    this.password = await bcrypt.hash(this.password, 10)
+    next()
 })
-UserSchema.methods.comparePassword=async function(password){
-    return await bcrypt.compare(password,this.password);
+
+userSchema.methods.isPasswordCorrect = async function(password){
+    return await bcrypt.compare(password, this.password)
 }
 
-UserSchema.methods.generateAccessToken = function(){
+userSchema.methods.generateAccessToken = function(){
     return jwt.sign(
         {
             _id: this._id,
             email: this.email,
             username: this.username,
-            fullname: this.fullname
+            fullName: this.fullName
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
@@ -78,7 +79,7 @@ UserSchema.methods.generateAccessToken = function(){
         }
     )
 }
-UserSchema.methods.generateRefreshToken = function(){
+userSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
         {
             _id: this._id,
@@ -90,5 +91,44 @@ UserSchema.methods.generateRefreshToken = function(){
         }
     )
 }
+export const User = mongoose.model("User", userSchema)
 
-export const User=mongoose.model("User",UserSchema)
+// userSchema.pre("save",async function(next){
+//     if(this.isModified("password")){
+//         this.password=await bcrypt.hash(this.password,10);
+//     }
+//     next();
+// })
+
+// userSchema.methods.isPasswordCorrect = async function(password){
+//     return await bcrypt.compare(password, this.password)
+// }
+
+// userSchema.methods.generateAccessToken = function(){
+//     return jwt.sign(
+//         {
+//             _id: this._id,
+//             email: this.email,
+//             username: this.username,
+//             fullname: this.fullname
+//         },
+//         process.env.ACCESS_TOKEN_SECRET,
+//         {
+//             expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+//         }
+//     )
+// }
+// userSchema.methods.generateRefreshToken = function(){
+//     return jwt.sign(
+//         {
+//             _id: this._id,
+            
+//         },
+//         process.env.REFRESH_TOKEN_SECRET,
+//         {
+//             expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+//         }
+//     )
+// }
+
+// export const User=mongoose.model("User",userSchema)
