@@ -16,7 +16,7 @@ const uploadPhoto = asyncHandler(async (req, res) => {
   if (!photoLocalPath) {
     throw new ApiError(400, "photo is required");
   }
-
+ 
   const PhotoUpload = await uploadOnCloudinary(photoLocalPath);
   if (!PhotoUpload) {
     throw new ApiError(400, "photo not uploaded");
@@ -43,7 +43,7 @@ const getPhotoDetails = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user?._id).select(
     "-password -refreshToken"
   );
-  console.log("user", user);
+  console.log("user", user); 
   if (!user) {
     throw new ApiError(500, "something went wrong");
   }

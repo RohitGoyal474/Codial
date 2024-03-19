@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser } from "../controllers/user.controller.js";
+import { SearchUser, registerUser } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { userLogout } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -35,6 +35,7 @@ router.route("/refresh-token").post(refreshAccessToken);
 router.route("/get-user").get(verifyJWT, getCurrentUser);
 router.route("/get-video").get(verifyJWT, getVideoDetails);
 router.route("/get-photo").get(verifyJWT, getPhotoDetails);
+router.route("/bulk").get( SearchUser);
 router.route("/upload-video").post(
   upload.fields([
     {

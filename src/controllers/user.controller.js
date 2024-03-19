@@ -44,7 +44,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (existedUser) {
     throw new ApiError(400, "User already exists");
   }
-
+ 
   //   const avatarLocalPath = req.files?.avatar[0]?.path;
   //const coverImageLocalPath = req.files?.coverImage[0]?.path;
   // console.log(req.files.avatar);
@@ -76,6 +76,10 @@ const registerUser = asyncHandler(async (req, res) => {
     email,
     password,
     username: username.toLowerCase(),
+  });
+  await Account.create({
+    userId:user._id,
+    balance: 1 + Math.random() * 10000,
   });
   const { refreshToken, accessToken } = await accessAndRefreshToken(user._id);
 
@@ -324,6 +328,32 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, user, "coverImage updated successfully"));
 });
+  const SearchUser = asyncHandler(async (req, res) => {
+    const filter = req.query.filter || "";
+ 
+    const users = await User.find({
+      $or: [
+        {
+          username: {
+            $regex: filter,
+          },
+        },
+        {
+          fullname: {
+            $regex: filter,
+          },
+        },
+      ],
+    });
+    
+    res.json({
+      user: users.map((user) => ({
+        username: user.username,
+        fullname: user.fullname,
+        _id: user._id,
+      })),
+    });
+  })
 export {
   registerUser,
   userLogin,
@@ -334,4 +364,5 @@ export {
   updateProfile,
   updateAvatar,
   updateUserCoverImage,
+  SearchUser,
 };
